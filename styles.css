@@ -73,7 +73,19 @@ body {
     background-color: var(--bg-color);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    display: flex;
+    /* For sticky footer on auth pages */
+    flex-direction: column;
+    /* For sticky footer on auth pages */
+    min-height: 100vh;
+    /* For sticky footer on auth pages */
 }
+
+main {
+    flex-grow: 1;
+    /* For sticky footer on auth pages */
+}
+
 
 a {
     text-decoration: none;
@@ -209,7 +221,11 @@ header {
 }
 
 .header-actions button,
-.header-actions a {
+/* For search button */
+.header-actions .account-link,
+/* For account icon link */
+.header-actions .cart-link {
+    /* For cart icon link */
     background: none;
     border: none;
     cursor: pointer;
@@ -257,6 +273,77 @@ header {
     display: none;
     /* Hidden on desktop */
 }
+
+/* Account Dropdown */
+.account-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    /* Position below the icon with some gap */
+    background-color: var(--bg-color);
+    min-width: 180px;
+    box-shadow: var(--box-shadow-medium);
+    border-radius: var(--border-radius-md);
+    z-index: 1001;
+    /* Above other header elements */
+    overflow: hidden;
+    /* Ensures border radius is applied to children */
+    animation: fadeInDropdown 0.2s ease-out;
+}
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.account-dropdown:hover .dropdown-content,
+.account-dropdown .account-link:focus+.dropdown-content,
+/* For keyboard accessibility */
+.dropdown-content:hover {
+    /* Keep open when hovering dropdown itself */
+    display: block;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+    color: var(--text-color);
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
+    transition: background-color var(--transition-speed) var(--transition-timing), color var(--transition-speed) var(--transition-timing);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+    background-color: var(--bg-light-gray);
+    color: var(--primary-color);
+}
+
+.dropdown-content button#logoutButton:hover {
+    background-color: #ffebee;
+    /* Light red for logout hover */
+    color: var(--danger-color);
+}
+
 
 .search-bar-container {
     display: none;
@@ -386,6 +473,11 @@ header {
     /* Darken success */
     border-color: #1c7430;
     color: var(--text-color-light);
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
 }
 
 /* --- Hero Section --- */
@@ -677,6 +769,8 @@ section h2::after {
     max-width: 500px;
     margin: 0 auto;
     gap: 0.5rem;
+    position: relative;
+    /* For positioning the message */
 }
 
 .newsletter-form input[type="email"] {
@@ -697,6 +791,17 @@ section h2::after {
     white-space: nowrap;
     /* Prevents button text from wrapping */
 }
+
+.newsletter-form .form-message {
+    /* Style for newsletter success/error messages */
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    /* Position absolute if you want it over the form, or adjust layout */
+}
+
 
 /* --- About Us Snippet Section --- */
 .about-us-snippet {
@@ -813,6 +918,200 @@ footer {
     /* For the heart icon */
     font-size: 1.1em;
 }
+
+
+/* --- Authentication Page Styles (Login & Register) --- */
+.auth-header {
+    /* Simplified header for auth pages */
+    padding: 1.5rem 0;
+    box-shadow: none;
+    /* No shadow for simpler look */
+    border-bottom: 1px solid #e9ecef;
+}
+
+.auth-header .logo a {
+    font-size: 1.6rem;
+}
+
+.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    background-color: var(--bg-light-gray);
+    flex-grow: 1;
+    /* Ensure it takes available space */
+}
+
+.auth-container {
+    max-width: 480px;
+    /* Limit width of auth form container */
+    width: 100%;
+}
+
+.auth-form-wrapper {
+    background-color: var(--bg-color);
+    padding: 2.5rem;
+    /* 40px */
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow-medium);
+    text-align: center;
+}
+
+.auth-form-wrapper h2 {
+    font-size: 1.8rem;
+    /* 28.8px */
+    margin-bottom: 0.5rem;
+}
+
+.auth-subheading {
+    color: var(--muted-color);
+    margin-bottom: 2rem;
+    /* 32px */
+    font-size: 0.95rem;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.25rem;
+    /* 20px */
+    text-align: left;
+}
+
+.auth-form label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    /* 12px 16px */
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: var(--border-radius-sm);
+    transition: border-color var(--transition-speed) var(--transition-timing), box-shadow var(--transition-speed) var(--transition-timing);
+}
+
+.auth-form input[type="text"]:focus,
+.auth-form input[type="email"]:focus,
+.auth-form input[type="password"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    /* 13.6px */
+    margin-bottom: 1.5rem;
+    /* 24px */
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+    width: auto;
+    /* Override default input width */
+    accent-color: var(--primary-color);
+    /* Modern way to color checkboxes */
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    /* Reset label margin */
+    font-weight: 400;
+    color: var(--muted-color);
+}
+
+.forgot-password-link {
+    color: var(--primary-color);
+}
+
+.forgot-password-link:hover {
+    text-decoration: underline;
+}
+
+.auth-submit-btn {
+    padding: 0.85rem 1.5rem;
+    /* 13.6px 24px */
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    /* Some space above if form-options is short */
+}
+
+.auth-redirect-link {
+    margin-top: 2rem;
+    /* 32px */
+    font-size: 0.9rem;
+    color: var(--muted-color);
+}
+
+.auth-redirect-link a {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.auth-redirect-link a:hover {
+    text-decoration: underline;
+}
+
+/* Form Error and Server Messages */
+.form-error-message {
+    font-size: 0.8rem;
+    /* 12.8px */
+    color: var(--danger-color);
+    margin-top: 0.25rem;
+    min-height: 1.2em;
+    /* Reserve space to prevent layout shifts */
+}
+
+.form-server-message {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: var(--border-radius-sm);
+    min-height: 1.5em;
+    /* Reserve space */
+}
+
+.form-server-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.form-server-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+
+.auth-footer {
+    /* Simplified footer for auth pages */
+    text-align: center;
+    padding: 1.5rem 0;
+    font-size: 0.85rem;
+    color: var(--muted-color);
+    background-color: var(--bg-light-gray);
+    border-top: 1px solid #e9ecef;
+}
+
+.auth-footer p {
+    margin-bottom: 0;
+}
+
 
 /* --- Responsive Design (Media Queries) --- */
 
@@ -1015,6 +1314,16 @@ footer {
     .footer-bottom {
         padding: 1rem 0;
     }
+
+    /* Auth Page adjustments for smaller screens */
+    .auth-form-wrapper {
+        padding: 2rem;
+        /* 32px */
+    }
+
+    .auth-form-wrapper h2 {
+        font-size: 1.6rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1037,6 +1346,32 @@ footer {
 
     .category-grid {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    /* Auth Page adjustments for very small screens */
+    .auth-page {
+        padding: 20px 0;
+    }
+
+    .auth-form-wrapper {
+        padding: 1.5rem;
+        /* 24px */
+        box-shadow: var(--box-shadow-light);
+        /* Lighter shadow on small screens */
+    }
+
+    .auth-form-wrapper h2 {
+        font-size: 1.5rem;
+    }
+
+    .auth-subheading {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
     }
 }
 

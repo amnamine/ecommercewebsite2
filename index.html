@@ -14,34 +14,41 @@
     <header>
         <div class="container header-container">
             <div class="logo">
-                <a href="#">ElectroMart</a>
+                <a href="index.html">ElectroMart</a>
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#products">Products</a></li>
-                    <li><a href="#categories">Categories</a></li>
-                    <li><a href="#deals">Deals</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="index.html#home" class="nav-link active">Home</a></li>
+                    <li><a href="index.html#products" class="nav-link">Products</a></li>
+                    <li><a href="index.html#categories" class="nav-link">Categories</a></li>
+                    <li><a href="index.html#deals" class="nav-link">Deals</a></li>
+                    <li><a href="index.html#about" class="nav-link">About Us</a></li>
+                    <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
             <div class="header-actions">
                 <button class="search-button" aria-label="Search">
-                    <!-- Placeholder for search icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 </button>
                 <a href="#cart" class="cart-link" aria-label="Shopping Cart">
-                    <!-- Placeholder for cart icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     <span class="cart-count">0</span>
                 </a>
-                <a href="#account" class="account-link" aria-label="User Account">
-                    <!-- Placeholder for user icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </a>
+                <!-- Updated Account Link -->
+                <div class="account-dropdown">
+                    <a href="login.html" class="account-link" aria-label="User Account">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <div class="dropdown-content">
+                        <!-- Links will be dynamically updated by script.js based on auth state -->
+                        <a href="login.html" id="loginLink">Login</a>
+                        <a href="register.html" id="registerLink">Register</a>
+                        <a href="#profile" id="profileLink" style="display:none;">My Profile</a>
+                        <a href="#orders" id="ordersLink" style="display:none;">My Orders</a>
+                        <button id="logoutButton" style="display:none;">Logout</button>
+                    </div>
+                </div>
                 <button class="menu-toggle" aria-label="Open navigation menu">
-                    <!-- Placeholder for menu icon (for mobile) -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
             </div>
@@ -179,6 +186,7 @@
                 <form class="newsletter-form">
                     <input type="email" placeholder="Enter your email address" required>
                     <button type="submit" class="btn btn-primary">Subscribe</button>
+                    <div class="form-message" style="margin-top: 10px;"></div>
                 </form>
             </div>
         </section>
@@ -211,9 +219,9 @@
                 <div class="footer-column">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#products">Products</a></li>
-                        <li><a href="#deals">Special Offers</a></li>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#products">Products</a></li>
+                        <li><a href="index.html#deals">Special Offers</a></li>
                         <li><a href="#track-order">Track Order</a></li>
                         <li><a href="#faq">FAQ</a></li>
                     </ul>

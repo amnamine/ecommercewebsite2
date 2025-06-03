@@ -1,23 +1,46 @@
 // script.js
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Make outer function async for initial auth check
+    // --- Global Elements & State ---
+    const body = document.body;
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    let currentUser = null; // Will store user data if logged in
+
+    // --- Helper to display server messages on forms ---
+    function displayFormMessage(formElement, message, type = 'error') {
+        const messageDiv = formElement.querySelector('.form-server-message');
+        if (messageDiv) {
+            messageDiv.textContent = message;
+            messageDiv.className = 'form-server-message'; // Reset
+            messageDiv.classList.add(type); // 'success' or 'error'
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = 'form-server-message';
+            }, 5000);
+        }
+    }
+    function clearFormErrorMessages(formElement) {
+        formElement.querySelectorAll('.form-error-message').forEach(el => el.textContent = '');
+        const serverMessageDiv = formElement.querySelector('.form-server-message');
+        if (serverMessageDiv) {
+            serverMessageDiv.textContent = '';
+            serverMessageDiv.className = 'form-server-message';
+        }
+    }
+
+
     // --- Mobile Navigation Toggle ---
     const menuToggle = document.querySelector('.menu-toggle');
     const mainNav = document.querySelector('.main-nav');
-
     if (menuToggle && mainNav) {
         menuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            // Optional: Change menu icon to close icon when active
-            const menuIcon = menuToggle.querySelector('svg'); // Assuming one SVG inside
-            if (mainNav.classList.contains('active')) {
-                menuToggle.setAttribute('aria-expanded', 'true');
-                // Change to a close icon (X)
-                if (menuIcon) menuIcon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
-            } else {
-                menuToggle.setAttribute('aria-expanded', 'false');
-                // Change back to menu icon (hamburger)
-                if (menuIcon) menuIcon.innerHTML = '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
+            const isActive = mainNav.classList.toggle('active');
+            menuToggle.setAttribute('aria-expanded', isActive.toString());
+            const menuIcon = menuToggle.querySelector('svg');
+            if (menuIcon) {
+                menuIcon.innerHTML = isActive ?
+                    '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>' :
+                    '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
             }
         });
     }
@@ -26,20 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.querySelector('.search-button');
     const searchBarContainer = document.querySelector('.search-bar-container');
     const searchInput = document.getElementById('searchInput');
-
     if (searchButton && searchBarContainer) {
         searchButton.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent click from immediately closing if search bar is part of a dropdown
-            searchBarContainer.classList.toggle('active');
-            if (searchBarContainer.classList.contains('active')) {
-                searchButton.setAttribute('aria-expanded', 'true');
-                if(searchInput) searchInput.focus(); // Focus the input when shown
-            } else {
-                searchButton.setAttribute('aria-expanded', 'false');
-            }
+            event.stopPropagation();
+            const isActive = searchBarContainer.classList.toggle('active');
+            searchButton.setAttribute('aria-expanded', isActive.toString());
+            if (isActive && searchInput) searchInput.focus();
         });
-
-        // Optional: Close search bar if clicked outside
         document.addEventListener('click', (event) => {
             if (searchBarContainer.classList.contains('active') &&
                 !searchBarContainer.contains(event.target) &&
@@ -49,207 +65,302 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
-    // --- Search Submit (Placeholder) ---
     const searchSubmitButton = document.getElementById('searchSubmit');
     if (searchSubmitButton && searchInput) {
-        searchSubmitButton.addEventListener('click', () => {
-            const searchTerm = searchInput.value;
-            if (searchTerm.trim() !== '') {
-                // In a real application, you would redirect to a search results page
-                // or fetch search results via AJAX.
-                console.log('Searching for:', searchTerm);
-                // Example: window.location.href = '/search?q=' + encodeURIComponent(searchTerm);
-                // For now, just log to console and clear.
-                searchInput.value = '';
-                // Optionally hide search bar after search
-                // searchBarContainer.classList.remove('active');
-                // searchButton.setAttribute('aria-expanded', 'false');
-            } else {
-                // Maybe provide some feedback if search term is empty
-                console.log('Search term is empty.');
-            }
-        });
-        // Allow submitting search with Enter key
+        const performSearch = () => {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) console.log('Searching for:', searchTerm);
+            else console.log('Search term is empty.');
+        };
+        searchSubmitButton.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Prevent default form submission if it's in a form
-                searchSubmitButton.click();
-            }
+            if (event.key === 'Enter') { event.preventDefault(); performSearch(); }
         });
     }
 
-
-    // --- Sticky Header (Optional: Add class on scroll) ---
-    const header = document.querySelector('header');
+    // --- Sticky Header ---
+    const header = document.querySelector('header:not(.auth-header)');
     if (header) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) { // Adjust scroll threshold as needed
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
+            header.classList.toggle('scrolled', window.scrollY > 50);
         });
     }
-    // Add this to your CSS for the .scrolled effect:
-    /*
-    header.scrolled {
-        background-color: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(5px); // For a frosted glass effect if desired
-    }
-    */
 
     // --- Update Current Year in Footer ---
     const currentYearSpan = document.getElementById('currentYear');
-    if (currentYearSpan) {
-        currentYearSpan.textContent = new Date().getFullYear();
-    }
+    if (currentYearSpan) currentYearSpan.textContent = new Date().getFullYear();
 
-    // --- Active Navigation Link Highlighting (Basic Example) ---
-    // This is a very basic version. For a real site, this logic would be more complex,
-    // especially with multiple pages or a single-page application router.
-    const navLinks = document.querySelectorAll('.main-nav ul li a');
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html'; // Get current page file name
-
+    // --- Active Navigation Link Highlighting & Smooth Scroll ---
+    const navLinks = document.querySelectorAll('.main-nav .nav-link');
     navLinks.forEach(link => {
-        const linkPath = link.getAttribute('href');
-        // Simple check for hash links or direct page links
-        if (linkPath === `#${currentPath.replace('.html', '')}` || linkPath === currentPath || (currentPath === 'index.html' && linkPath === '#home')) {
-            link.classList.add('active');
+        const linkHref = link.getAttribute('href');
+        if (linkHref === currentPage || (currentPage === 'index.html' && (linkHref === 'index.html#home' || link.hash === window.location.hash))) {
+             navLinks.forEach(l => l.classList.remove('active'));
+             link.classList.add('active');
         }
 
-        // Smooth scroll for hash links
-        if (linkPath.startsWith('#')) {
+        if (linkHref && (linkHref.startsWith('index.html#') || (linkHref.startsWith('#') && currentPage === 'index.html'))) {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    // Calculate offset if you have a sticky header
-                    const headerOffset = document.querySelector('header') ? document.querySelector('header').offsetHeight : 0;
-                    const elementPosition = targetElement.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
-
-                    // Close mobile nav if open after clicking a link
-                    if (mainNav && mainNav.classList.contains('active')) {
-                        mainNav.classList.remove('active');
-                        if (menuToggle && menuToggle.querySelector('svg')) {
-                             menuToggle.querySelector('svg').innerHTML = '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
-                             menuToggle.setAttribute('aria-expanded', 'false');
-                        }
+                const targetId = this.hash;
+                if (currentPage === 'index.html' && targetId) {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const headerOffset = document.querySelector('header:not(.auth-header)')?.offsetHeight || 0;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                }
+                if (mainNav && mainNav.classList.contains('active')) {
+                    mainNav.classList.remove('active');
+                    if (menuToggle && menuToggle.querySelector('svg')) {
+                        menuToggle.querySelector('svg').innerHTML = '<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
+                        menuToggle.setAttribute('aria-expanded', 'false');
                     }
                 }
             });
         }
     });
 
-    // --- Newsletter Form Submission (Basic Example) ---
+    // --- Newsletter Form Submission ---
     const newsletterForm = document.querySelector('.newsletter-form');
     if (newsletterForm) {
-        newsletterForm.addEventListener('submit', (event) => {
-            event.preventDefault(); // Prevent default form submission
+        newsletterForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
             const emailInput = newsletterForm.querySelector('input[type="email"]');
-            if (emailInput && emailInput.value) {
-                // In a real application, you'd send this to a server (e.g., using fetch API)
-                console.log('Newsletter subscription for:', emailInput.value);
-                // Show a success message (you'd create a proper UI element for this)
-                // For now, just an alert (though alerts are generally discouraged for good UX)
-                // alert(`Thank you for subscribing, ${emailInput.value}!`);
-                
-                // Create a custom message display instead of alert
-                let messageDiv = newsletterForm.querySelector('.form-message');
-                if (!messageDiv) {
-                    messageDiv = document.createElement('div');
-                    messageDiv.className = 'form-message';
-                    // Insert message after the form or button
-                    newsletterForm.appendChild(messageDiv);
+            const messageDiv = newsletterForm.querySelector('.form-message'); // Ensure this div exists in HTML
+            if (!messageDiv || !emailInput) return;
 
+            clearFormErrorMessages(newsletterForm); // Clear previous messages
+
+            if (emailInput.value && emailInput.value.includes('@')) {
+                try {
+                    const response = await fetch('/api/newsletter/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: emailInput.value })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        displayFormMessage(newsletterForm, result.message || 'Thank you for subscribing!', 'success');
+                        emailInput.value = '';
+                    } else {
+                        displayFormMessage(newsletterForm, result.error || result.message || 'Subscription failed.', 'error');
+                    }
+                } catch (error) {
+                    console.error("Newsletter fetch error:", error);
+                    displayFormMessage(newsletterForm, 'An error occurred. Please try again.', 'error');
                 }
-                messageDiv.textContent = `Thank you for subscribing, ${emailInput.value}!`;
-                messageDiv.style.color = 'var(--success-color)';
-                messageDiv.style.marginTop = '10px';
-                messageDiv.style.fontWeight = '500';
-
-
-                emailInput.value = ''; // Clear the input field
-
-                // Remove message after a few seconds
-                setTimeout(() => {
-                    if(messageDiv) messageDiv.textContent = '';
-                }, 5000);
-
-            } else if (emailInput) {
-                // Handle empty email field
-                let messageDiv = newsletterForm.querySelector('.form-message');
-                 if (!messageDiv) {
-                    messageDiv = document.createElement('div');
-                    messageDiv.className = 'form-message';
-                    newsletterForm.appendChild(messageDiv);
-                }
-                messageDiv.textContent = 'Please enter a valid email address.';
-                messageDiv.style.color = 'var(--danger-color)';
-                messageDiv.style.marginTop = '10px';
-                messageDiv.style.fontWeight = '500';
-                emailInput.focus();
-
-                setTimeout(() => {
-                     if(messageDiv) messageDiv.textContent = '';
-                }, 3000);
+            } else {
+                displayFormMessage(newsletterForm, 'Please enter a valid email address.', 'error');
+                if(emailInput) emailInput.focus();
             }
         });
     }
 
-    // --- Add to Cart Button (Placeholder Interaction) ---
+    // --- Add to Cart Button (Placeholder) ---
     const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
     const cartCountElement = document.querySelector('.cart-link .cart-count');
     let cartItemCount = 0;
-
-    if (cartCountElement) { // Initialize cart count display
-        cartCountElement.textContent = cartItemCount;
-    }
-
+    if (cartCountElement) cartCountElement.textContent = cartItemCount;
     addToCartButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // In a real app, this would involve more complex logic:
-            // - Getting product ID and details
-            // - Sending data to a server/cart API
-            // - Updating cart state globally
-            // - Providing more detailed user feedback (e.g., item added to cart modal)
-
             cartItemCount++;
             if (cartCountElement) {
                 cartCountElement.textContent = cartItemCount;
-                // Add a little animation to cart count
                 cartCountElement.style.transform = 'scale(1.3)';
-                cartCountElement.style.transition = 'transform 0.1s ease-in-out';
-                setTimeout(() => {
-                    cartCountElement.style.transform = 'scale(1)';
-                }, 150);
+                setTimeout(() => { cartCountElement.style.transform = 'scale(1)'; }, 150);
             }
-            
-            // Change button text temporarily
             const originalText = button.textContent;
-            button.textContent = 'Added!';
-            button.style.backgroundColor = 'var(--primary-color)'; // Change color to indicate success
-            
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.backgroundColor = ''; // Revert to original style (or var(--success-color))
-            }, 1500);
-
-            console.log('Product added to cart (placeholder). Current count:', cartItemCount);
+            button.textContent = 'Added!'; button.disabled = true;
+            setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
         });
     });
 
-    // --- Image Error Handling for Placeholders (already in HTML, but good to be aware of) ---
-    // The onerror attribute in the <img> tags in index.html handles this.
-    // Example: <img src="path/to/image.jpg" onerror="this.onerror=null;this.src='placeholder.jpg';" />
+    // --- Authentication UI Management ---
+    const updateAuthUI = () => {
+        const loginLink = document.getElementById('loginLink');
+        const registerLink = document.getElementById('registerLink');
+        const profileLink = document.getElementById('profileLink');
+        const ordersLink = document.getElementById('ordersLink');
+        const logoutButton = document.getElementById('logoutButton');
+        const accountIconLink = document.querySelector('.account-dropdown .account-link');
+        const welcomeMessageElement = document.getElementById('userWelcomeMessage'); // Optional: Add <span id="userWelcomeMessage"></span> in header
 
-    console.log('ElectroMart JavaScript loaded and initialized.');
+        if (currentUser) {
+            if (loginLink) loginLink.style.display = 'none';
+            if (registerLink) registerLink.style.display = 'none';
+            if (profileLink) profileLink.style.display = 'block';
+            if (ordersLink) ordersLink.style.display = 'block';
+            if (logoutButton) logoutButton.style.display = 'block';
+            if (accountIconLink) accountIconLink.href = '#profile'; // TODO: Create profile.html
+            if (welcomeMessageElement) welcomeMessageElement.textContent = `Hi, ${currentUser.fullName || currentUser.email}!`;
+        } else {
+            if (loginLink) loginLink.style.display = 'block';
+            if (registerLink) registerLink.style.display = 'block';
+            if (profileLink) profileLink.style.display = 'none';
+            if (ordersLink) ordersLink.style.display = 'none';
+            if (logoutButton) logoutButton.style.display = 'none';
+            if (accountIconLink) accountIconLink.href = 'login.html';
+            if (welcomeMessageElement) welcomeMessageElement.textContent = '';
+        }
+    };
+
+    // --- Check Authentication Status on Page Load ---
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch('/api/users/authcheck'); // Server sends cookie automatically
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.isAuthenticated) {
+                    currentUser = data.user;
+                } else {
+                    currentUser = null;
+                }
+            } else {
+                // If authcheck fails (e.g. 401), user is not authenticated
+                currentUser = null;
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            currentUser = null;
+        }
+        updateAuthUI(); // Update UI after checking status
+    }
+
+    // --- Logout ---
+    const logoutUser = async () => {
+        try {
+            const response = await fetch('/api/users/logout', { method: 'POST' });
+            const result = await response.json();
+            if (response.ok && result.success) {
+                currentUser = null;
+                updateAuthUI();
+                // Redirect to homepage or login page after logout
+                if (currentPage !== 'index.html' && currentPage !== 'login.html' && currentPage !== 'register.html') {
+                    window.location.href = 'index.html';
+                } else if (currentPage === 'profile.html' || currentPage === 'orders.html') { // Assuming these pages exist
+                     window.location.href = 'login.html';
+                }
+            } else {
+                alert('Logout failed: ' + (result.error || 'Please try again.'));
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('An error occurred during logout.');
+        }
+    };
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) logoutButton.addEventListener('click', logoutUser);
+
+
+    // --- Login Form Handling (login.html) ---
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const emailInput = loginForm.email;
+            const passwordInput = loginForm.password;
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+
+            clearFormErrorMessages(loginForm);
+            let isValid = true;
+
+            if (!emailInput.value.trim()) {
+                emailError.textContent = 'Email is required.'; isValid = false;
+            } else if (!emailInput.value.includes('@')) {
+                emailError.textContent = 'Please enter a valid email.'; isValid = false;
+            }
+            if (!passwordInput.value) {
+                passwordError.textContent = 'Password is required.'; isValid = false;
+            }
+
+            if (isValid) {
+                try {
+                    const response = await fetch('/api/users/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: emailInput.value.trim(), password: passwordInput.value })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        currentUser = result.user; // Server should return user details
+                        updateAuthUI(); // Update UI elements like account dropdown
+                        displayFormMessage(loginForm, 'Login successful! Redirecting...', 'success');
+                        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    } else {
+                        displayFormMessage(loginForm, result.error || 'Invalid email or password.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login fetch error:', error);
+                    displayFormMessage(loginForm, 'An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    }
+
+    // --- Registration Form Handling (register.html) ---
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fullNameInput = registerForm.fullName;
+            const emailInput = registerForm.email;
+            const passwordInput = registerForm.password;
+            const confirmPasswordInput = registerForm.confirmPassword;
+            const termsInput = registerForm.terms;
+
+            const fullNameError = document.getElementById('fullNameError');
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+            const termsError = document.getElementById('termsError');
+
+            clearFormErrorMessages(registerForm);
+            let isValid = true;
+
+            if (!fullNameInput.value.trim()) { fullNameError.textContent = 'Full name is required.'; isValid = false; }
+            if (!emailInput.value.trim()) { emailError.textContent = 'Email is required.'; isValid = false; }
+            else if (!emailInput.value.includes('@')) { emailError.textContent = 'Please enter a valid email.'; isValid = false; }
+            if (!passwordInput.value) { passwordError.textContent = 'Password is required.'; isValid = false; }
+            else if (passwordInput.value.length < 6) { passwordError.textContent = 'Password must be at least 6 characters.'; isValid = false; }
+            if (passwordInput.value !== confirmPasswordInput.value) { confirmPasswordError.textContent = 'Passwords do not match.'; isValid = false; }
+            if (!termsInput.checked) { termsError.textContent = 'You must agree to the terms.'; isValid = false; }
+
+            if (isValid) {
+                try {
+                    const response = await fetch('/api/users/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            fullName: fullNameInput.value.trim(),
+                            email: emailInput.value.trim(),
+                            password: passwordInput.value
+                        })
+                    });
+                    const result = await response.json();
+                    if (response.status === 201 && result.success) {
+                        displayFormMessage(registerForm, 'Registration successful! Please log in.', 'success');
+                        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+                    } else {
+                        displayFormMessage(registerForm, result.error || 'Registration failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Registration fetch error:', error);
+                    displayFormMessage(registerForm, 'An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    }
+
+    // --- Initial UI Update based on Auth State ---
+    if (document.querySelector('.account-dropdown')) {
+        await checkAuthStatus(); // Perform initial check and update UI
+    }
+
+    console.log(`ElectroMart JavaScript loaded for ${currentPage}. Auth status checked.`);
 });
