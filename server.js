@@ -1,20 +1,31 @@
 // server.js
-// This is a basic Express.js server with SQLite integration for an e-commerce website.
+// Optimized for Render.com deployment with SQLite on a persistent disk.
 
 // --- Dependencies ---
 const express = require('express');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose(); // .verbose() for more detailed error messages
+const sqlite3 = require('sqlite3').verbose();
 
 // --- Initialize Express App ---
 const app = express();
-const PORT = process.env.PORT || 3000; // Use environment variable for port or default to 3000
+// Render sets the PORT environment variable. Default to 3000 for local development.
+const PORT = process.env.PORT || 3000;
 
 // --- Database Setup ---
-const dbPath = path.join(__dirname, 'database.sqlite');
+// --- IMPORTANT FOR RENDER.COM ---
+// Render provides RENDER_DATA_DIR as the mount path for persistent disks.
+// Use this path for your SQLite database file.
+// For local development, it will default to the project's root directory.
+const dataDir = process.env.RENDER_DATA_DIR || __dirname;
+const dbPath = path.join(dataDir, 'database.sqlite');
+
+console.log(`SQLite Database Path: ${dbPath}`); // Log the path for debugging
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
+        // Consider how your app should behave if DB connection fails.
+        // For now, we'll log and continue, but routes might fail.
     } else {
         console.log('Connected to the SQLite database.');
         initializeDatabase(); // Create tables if they don't exist
@@ -33,7 +44,7 @@ function initializeDatabase() {
                 price REAL NOT NULL,
                 imageUrl TEXT,
                 description TEXT,
-                badge TEXT, -- e.g., 'New', 'Sale', 'Hot'
+                badge TEXT,
                 stock INTEGER DEFAULT 0
             )
         `, (err) => {
@@ -41,8 +52,7 @@ function initializeDatabase() {
                 console.error('Error creating products table:', err.message);
             } else {
                 console.log('Products table checked/created successfully.');
-                // Seed some initial product data if the table is empty (optional)
-                seedProducts();
+                seedProducts(); // Seed initial data if table is new/empty
             }
         });
 
@@ -60,20 +70,18 @@ function initializeDatabase() {
                 console.log('Newsletter subscriptions table checked/created successfully.');
             }
         });
-
-        // You could add more tables here (e.g., users, orders, cart_items)
     });
 }
 
-// Function to seed initial product data (example)
+// Function to seed initial product data
 function seedProducts() {
     const sampleProducts = [
-        { name: "Smartphone XYZ", category: "Mobile Phones", price: 699.99, imageUrl: "https://placehold.co/300x300/E0E0E0/B0B0B0?text=Smartphone", description: "Latest model with advanced features.", badge: "New", stock: 50 },
-        { name: "Laptop ProMax", category: "Laptops", price: 1150.00, imageUrl: "https://placehold.co/300x300/D8D8D8/A8A8A8?text=Laptop", description: "Powerful laptop for professionals.", badge: "Sale", stock: 30 },
-        { name: "Wireless Headphones", category: "Audio", price: 199.50, imageUrl: "https://placehold.co/300x300/E8E8E8/B8B8B8?text=Headphones", description: "Noise-cancelling wireless headphones.", badge: null, stock: 75 },
-        { name: "Smartwatch Series 7", category: "Wearables", price: 399.00, imageUrl: "https://placehold.co/300x300/F0F0F0/C0C0C0?text=Smartwatch", description: "Feature-rich smartwatch for a healthy lifestyle.", badge: "Hot", stock: 40 },
-        { name: "Gaming Console X", category: "Gaming", price: 499.00, imageUrl: "https://placehold.co/300x300/C2E0FF/5C85A6?text=Gaming+Console", description: "Next-gen gaming experience.", badge: "New", stock: 20 },
-        { name: "Bluetooth Speaker", category: "Audio", price: 89.99, imageUrl: "https://placehold.co/300x300/FFDDC2/A67C5C?text=Speaker", description: "Portable and powerful sound.", badge: null, stock: 100 }
+        { name: "Smartphone Alpha", category: "Mobile Phones", price: 799.99, imageUrl: "https://placehold.co/300x300/E0E0E0/B0B0B0?text=Smartphone", description: "Next-gen smartphone with AI features.", badge: "New", stock: 50 },
+        { name: "Laptop UltraSlim", category: "Laptops", price: 1250.00, imageUrl: "https://placehold.co/300x300/D8D8D8/A8A8A8?text=Laptop", description: "Lightweight and powerful for on-the-go productivity.", badge: "Sale", stock: 30 },
+        { name: "AudioBliss Headphones", category: "Audio", price: 249.50, imageUrl: "https://placehold.co/300x300/E8E8E8/B8B8B8?text=Headphones", description: "Immersive sound with active noise cancellation.", badge: null, stock: 75 },
+        { name: "Smartwatch Pro X", category: "Wearables", price: 429.00, imageUrl: "https://placehold.co/300x300/F0F0F0/C0C0C0?text=Smartwatch", description: "Advanced health tracking and seamless connectivity.", badge: "Hot", stock: 40 },
+        { name: "Gaming Rig Titan", category: "Gaming", price: 1999.00, imageUrl: "https://placehold.co/300x300/C2E0FF/5C85A6?text=Gaming+PC", description: "Ultimate performance for serious gamers.", badge: "New", stock: 15 },
+        { name: "Portable SoundWave Speaker", category: "Audio", price: 99.99, imageUrl: "https://placehold.co/300x300/FFDDC2/A67C5C?text=Speaker", description: "Compact speaker with rich, room-filling sound.", badge: null, stock: 100 }
     ];
 
     db.get("SELECT COUNT(*) as count FROM products", (err, row) => {
@@ -82,7 +90,7 @@ function seedProducts() {
             return;
         }
         if (row.count === 0) {
-            console.log("Seeding initial products...");
+            console.log("Seeding initial products into the database...");
             const stmt = db.prepare("INSERT INTO products (name, category, price, imageUrl, description, badge, stock) VALUES (?, ?, ?, ?, ?, ?, ?)");
             sampleProducts.forEach(product => {
                 stmt.run(product.name, product.category, product.price, product.imageUrl, product.description, product.badge, product.stock);
@@ -95,19 +103,18 @@ function seedProducts() {
                 }
             });
         } else {
-            console.log("Products table already has data. Skipping seed.");
+            console.log("Products table already contains data. Skipping seed operation.");
         }
     });
 }
-
 
 // --- Middleware ---
 app.use(express.json()); // To parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // To parse URL-encoded request bodies
 
-// Serve static files (HTML, CSS, JS) from the 'public' directory (or root in this case)
-// For this project structure, assuming index.html, styles.css, script.js are in the root.
-// If you have a 'public' folder, change to app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files (HTML, CSS, JS) from the root directory.
+// If your static files are in a 'public' folder, change to:
+// app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, '/')));
 
 
@@ -117,25 +124,25 @@ app.use(express.static(path.join(__dirname, '/')));
 app.get('/api/products', (req, res) => {
     db.all("SELECT * FROM products ORDER BY category, name", [], (err, rows) => {
         if (err) {
-            console.error("Error fetching products:", err.message);
-            res.status(500).json({ error: 'Failed to retrieve products from database.' });
+            console.error("Error fetching products from database:", err.message);
+            res.status(500).json({ error: 'Failed to retrieve products.' });
             return;
         }
         res.json(rows);
     });
 });
 
-// GET: Fetch a single product by ID (Example)
+// GET: Fetch a single product by ID
 app.get('/api/products/:id', (req, res) => {
     const productId = parseInt(req.params.id);
     if (isNaN(productId)) {
-        return res.status(400).json({ error: 'Invalid product ID.' });
+        return res.status(400).json({ error: 'Invalid product ID format.' });
     }
 
     db.get("SELECT * FROM products WHERE id = ?", [productId], (err, row) => {
         if (err) {
-            console.error(`Error fetching product ${productId}:`, err.message);
-            return res.status(500).json({ error: 'Failed to retrieve product.' });
+            console.error(`Error fetching product with ID ${productId}:`, err.message);
+            return res.status(500).json({ error: 'Failed to retrieve product details.' });
         }
         if (row) {
             res.json(row);
@@ -145,23 +152,22 @@ app.get('/api/products/:id', (req, res) => {
     });
 });
 
-
 // POST: Subscribe to newsletter
 app.post('/api/newsletter/subscribe', (req, res) => {
     const { email } = req.body;
 
-    if (!email || !email.includes('@')) { // Basic email validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { // Basic email format validation
         return res.status(400).json({ error: 'Please provide a valid email address.' });
     }
 
     const stmt = db.prepare("INSERT INTO newsletter_subscriptions (email) VALUES (?)");
-    stmt.run(email, function(err) { // Use function() to access this.lastID
+    stmt.run(email.toLowerCase(), function(err) { // Store email in lowercase for consistency
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(409).json({ message: 'This email is already subscribed.' }); // 409 Conflict
+                return res.status(409).json({ message: 'This email address is already subscribed.' });
             }
-            console.error("Error subscribing to newsletter:", err.message);
-            return res.status(500).json({ error: 'Failed to subscribe to newsletter.' });
+            console.error("Error subscribing email to newsletter:", err.message);
+            return res.status(500).json({ error: 'Failed to process newsletter subscription.' });
         }
         console.log(`New newsletter subscription: ${email} (ID: ${this.lastID})`);
         res.status(201).json({ success: true, message: 'Successfully subscribed to the newsletter!', id: this.lastID });
@@ -169,36 +175,53 @@ app.post('/api/newsletter/subscribe', (req, res) => {
     stmt.finalize();
 });
 
-// --- Basic Route for the Frontend ---
-// This ensures that your index.html is served for the root path.
-// If you have client-side routing, you might need a catch-all route.
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+// --- Frontend Route ---
+// Serves index.html for the root path and any other unhandled GET requests (for client-side routing if you add it later)
+app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) { // Don't serve index.html for API routes
+        return next();
+    }
+    res.sendFile(path.join(__dirname, 'index.html'), (err) => {
+        if (err) {
+            // If index.html is not found, or another error occurs
+            if (!res.headersSent) { // Check if headers are already sent
+                 res.status(500).send("Error serving the application.");
+            }
+        }
+    });
 });
+
 
 // --- Error Handling Middleware (Basic) ---
 // This should be defined after all other routes and middleware.
 app.use((err, req, res, next) => {
-    console.error("Unhandled error:", err.stack);
-    res.status(500).send('Something broke on the server!');
+    console.error("Unhandled application error:", err.stack);
+    if (!res.headersSent) {
+        res.status(500).send('An unexpected error occurred on the server!');
+    }
 });
 
 // --- Start the Server ---
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Serving static files from: ${path.join(__dirname, '/')}`);
-    console.log('Press Ctrl+C to quit.');
+    console.log(`Server is running on http://localhost:${PORT} (or your Render URL)`);
+    console.log(`Static files are being served from: ${path.join(__dirname, '/')}`);
+    console.log('Press Ctrl+C to quit if running locally.');
 });
 
-// --- Graceful Shutdown (Optional but good practice) ---
-process.on('SIGINT', () => {
-    console.log('\nShutting down server...');
+// --- Graceful Shutdown ---
+function gracefulShutdown() {
+    console.log('Attempting graceful shutdown...');
     db.close((err) => {
         if (err) {
-            console.error('Error closing database:', err.message);
+            console.error('Error closing SQLite database:', err.message);
         } else {
-            console.log('SQLite database connection closed.');
+            console.log('SQLite database connection closed successfully.');
         }
+        console.log('Server shut down.');
         process.exit(0);
     });
-});
+}
+
+process.on('SIGINT', gracefulShutdown); // Catches Ctrl+C
+process.on('SIGTERM', gracefulShutdown); // Catches kill signals (like from Render during deploys)
+
