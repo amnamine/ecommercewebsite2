@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nimbus Shop · Clean & Modern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">◎</div>
+      <div class="brand-text">
+        <span class="brand-title">Nimbus</span>
+        <span class="brand-sub">Shop</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="search">
+        <input id="search-input" type="text" placeholder="Search products…">
+        <button id="search-btn" aria-label="Search">Search</button>
+      </div>
+      <button id="cart-btn" class="cart-btn" aria-label="Open cart">
+        <span class="icon">🛒</span>
+        <span id="cart-count" class="badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="hero">
+      <h1>Discover products you'll love</h1>
+      <p>Beautifully designed essentials. Clean looks. Smooth experience.</p>
+    </section>
+
+    <section class="filters">
+      <div id="category-chips" class="chips"></div>
+    </section>
+
+    <section>
+      <div id="products-grid" class="grid"></div>
+    </section>
+  </main>
+
+  <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button id="close-cart" class="icon-btn" aria-label="Close cart">✕</button>
+    </div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="totals">
+        <span>Subtotal</span>
+        <span id="cart-subtotal" class="subtotal">$0.00</span>
+      </div>
+      <button id="checkout-btn" class="primary-btn">Checkout</button>
+    </div>
+  </aside>
+  <div id="drawer-backdrop" class="backdrop" aria-hidden="true"></div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="site-footer">
+    <div>© <span id="year"></span> Nimbus Shop. All rights reserved.</div>
+    <div class="links">
+      <a href="#" class="link">Privacy</a>
+      <a href="#" class="link">Terms</a>
+      <a href="#" class="link">Contact</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
