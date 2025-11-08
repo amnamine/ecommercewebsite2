@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nimbus Shop · Deals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><div class="logo">◎</div><div class="brand-text"><span class="brand-title">Nimbus</span><span class="brand-sub">Shop</span></div></div>
+    <nav class="nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/index.html" class="nav-link">Products</a>
+      <a href="/deals.html" class="nav-link">Deals</a>
+    </nav>
+    <div class="header-actions"><button id="cart-btn" class="cart-btn" aria-label="Open cart"><span class="icon">🛒</span><span id="cart-count" class="badge">0</span></button></div>
+  </header>
+
+  <main class="content">
+    <section class="hero"><h1 class="section-title">Today’s Deals</h1><p class="muted">Hand-picked items under $50.</p></section>
+    <section><div id="products-grid" class="grid"></div></section>
+  </main>
+
+  <!-- Cart drawer reused -->
+  <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+    <div class="cart-header"><h2>Your Cart</h2><button id="close-cart" class="icon-btn" aria-label="Close cart">✕</button></div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer"><div class="rows"><div class="row"><span>Subtotal</span><span id="cart-subtotal" class="subtotal">$0.00</span></div><div class="row"><span>Tax (10%)</span><span id="cart-tax">$0.00</span></div><div class="row"><span>Shipping</span><span id="cart-ship">$0.00</span></div><div class="row total"><span>Total</span><span id="cart-total">$0.00</span></div></div><button id="checkout-btn" class="primary-btn">Checkout</button></div>
+  </aside>
+  <div id="drawer-backdrop" class="backdrop" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const u = new URL(location.href); u.searchParams.set('view', 'deals'); history.replaceState(null,'',u.toString());
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

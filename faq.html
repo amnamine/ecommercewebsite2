@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nimbus Shop · FAQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><div class="logo">◎</div><div class="brand-text"><span class="brand-title">Nimbus</span><span class="brand-sub">Shop</span></div></div>
+    <nav class="nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/index.html" class="nav-link">Products</a>
+      <a href="/orders.html" class="nav-link">Orders</a>
+      <a href="/faq.html" class="nav-link">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <section class="hero">
+      <h1 class="section-title">Frequently Asked Questions</h1>
+      <p class="muted">Quick answers to common questions.</p>
+    </section>
+    <section>
+      <article class="card"><div class="body">
+        <div class="title">Shipping & Delivery</div>
+        <div class="accordion">
+          <button class="acc-header icon-btn" title="Toggle">▼</button>
+          <div class="acc-body">
+            <p class="muted">Orders are processed within 24–48 hours. Delivery typically takes 3–7 business days.</p>
+          </div>
+        </div>
+        <div class="title" style="margin-top:10px">Returns</div>
+        <div class="accordion">
+          <button class="acc-header icon-btn" title="Toggle">▼</button>
+          <div class="acc-body"><p class="muted">We accept returns within 30 days in original condition.</p></div>
+        </div>
+      </div></article>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll('.accordion').forEach(acc => {
+      const btn = acc.querySelector('.acc-header');
+      const body = acc.querySelector('.acc-body');
+      btn.addEventListener('click', () => body.classList.toggle('open'));
+    });
+  </script>
+</body>
+</html>

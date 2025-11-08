@@ -158,6 +158,18 @@ app.get('/api/orders', (req, res) => {
   res.json(orders);
 });
 
+// Order details
+app.get('/api/orders/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const o = db.orders.find(x => x.id === id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+  const items = db.order_items.filter(it => it.order_id === id).map(it => {
+    const p = db.products.find(pp => pp.id === it.product_id) || { name: 'Unknown', price: 0 };
+    return { product_id: it.product_id, name: p.name, quantity: it.quantity, price: p.price };
+  });
+  res.json({ ...o, items });
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

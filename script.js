@@ -91,6 +91,10 @@
     if (state.selectedCategory === 'Wishlist') {
       state.products = state.products.filter(p => state.wishlist.includes(p.id));
     }
+    // deals filter
+    if (state.view === 'deals') {
+      state.products = state.products.filter(p => p.price <= 50);
+    }
   }
 
   function renderChips() {
@@ -270,15 +274,16 @@
       if (!res.ok) throw new Error('Checkout failed');
       const data = await res.json();
       state.cart = []; saveCart(); renderCart(); updateCartBadge();
-      showToast(`Order #${data.id} placed! Total ${formatCurrency(data.total)}`);
       closeCheckoutModal(); closeDrawer();
-      refresh();
+      // Redirect to success page for a more complete flow
+      location.href = `/success.html?id=${data.id}`;
     } catch (e) { showToast('Failed to checkout. Please try again.'); }
     finally { els.placeOrder.disabled = false; }
   }
 
   function openQuickView(id){
     const p = state.products.find(x=>x.id===id); if(!p) return;
+    addRecent(p.id);
     els.modalImage.src = p.image_url; els.modalImage.onerror = () => { els.modalImage.src = 'https://placehold.co/640x360'; };
     els.modalTitle.textContent = p.name;
     els.modalDesc.textContent = p.description || '';
@@ -374,6 +379,7 @@
     await fetchProducts();
     renderChips();
     renderProducts();
+    await renderRecent();
   }
 
   function escapeHtml(str) {
@@ -413,6 +419,7 @@
   }
   // Read URL view flag (wishlist)
   const initView = new URLSearchParams(location.search).get('view');
+  state.view = initView || null;
   if (initView === 'wishlist') state.selectedCategory = 'Wishlist';
   (async () => {
     try { if (els.chips) await fetchCategories(); } catch (_) {}
@@ -420,3 +427,25 @@
   })();
 })();
 // (moved inside IIFE)
+  function addRecent(id){
+    try {
+      const raw = localStorage.getItem('recent');
+      const arr = raw ? JSON.parse(raw) : [];
+      const next = [id, ...arr.filter(x => x !== id)].slice(0, 6);
+      localStorage.setItem('recent', JSON.stringify(next));
+    } catch(_){}
+  }
+
+  async function renderRecent(){
+    if (!document.getElementById('recent-grid')) return;
+    let ids = [];
+    try { ids = JSON.parse(localStorage.getItem('recent') || '[]'); } catch(_){}
+    if (!ids.length) { document.getElementById('recent-grid').innerHTML = '<div class="muted">No recently viewed items yet.</div>'; return; }
+    // Fetch each product id (simple sequential for demo)
+    const items = [];
+    for (const id of ids){
+      try { const res = await fetch(`/api/products/${id}`); if (res.ok) items.push(await res.json()); } catch(_){}
+    }
+    document.getElementById('recent-grid').innerHTML = items.map(p => cardHtml(p)).join('');
+    attachCardEvents(); initReveal();
+  }
