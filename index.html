@@ -38,6 +38,14 @@
 
     <section class="filters">
       <div id="category-chips" class="chips"></div>
+      <div class="sort">
+        <label for="sort-select" class="muted">Sort</label>
+        <select id="sort-select" class="select">
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
     </section>
 
     <section>
@@ -52,9 +60,15 @@
     </div>
     <div id="cart-items" class="cart-items"></div>
     <div class="cart-footer">
-      <div class="totals">
-        <span>Subtotal</span>
-        <span id="cart-subtotal" class="subtotal">$0.00</span>
+      <div class="rows">
+        <div class="row"><span>Subtotal</span><span id="cart-subtotal" class="subtotal">$0.00</span></div>
+        <div class="row"><span>Tax (10%)</span><span id="cart-tax">$0.00</span></div>
+        <div class="row"><span>Shipping</span><span id="cart-ship">$0.00</span></div>
+        <div class="promo">
+          <input id="promo-code" class="input" type="text" placeholder="Promo code (SAVE10)" />
+          <button id="apply-promo" class="primary-btn" style="width:auto">Apply</button>
+        </div>
+        <div class="row total"><span>Total</span><span id="cart-total">$0.00</span></div>
       </div>
       <button id="checkout-btn" class="primary-btn">Checkout</button>
     </div>
@@ -62,6 +76,52 @@
   <div id="drawer-backdrop" class="backdrop" aria-hidden="true"></div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Quick View Modal -->
+  <div id="modal-backdrop" class="backdrop" aria-hidden="true"></div>
+  <div id="quick-view" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button id="close-modal" class="icon-btn modal-close" aria-label="Close">✕</button>
+      <div class="modal-body">
+        <img id="modal-image" class="modal-image" alt="Product image" />
+        <div class="modal-info">
+          <h3 id="modal-title"></h3>
+          <div id="modal-rating" class="rating"></div>
+          <p id="modal-desc" class="muted"></p>
+          <div class="modal-meta">
+            <span id="modal-price" class="price"></span>
+            <span id="modal-stock" class="muted"></span>
+          </div>
+          <div class="qty">
+            <button class="icon-btn" id="modal-dec">−</button>
+            <span id="modal-count" class="count">1</span>
+            <button class="icon-btn" id="modal-inc">+</button>
+          </div>
+          <button id="modal-add" class="primary-btn">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkout-backdrop" class="backdrop" aria-hidden="true"></div>
+  <div id="checkout-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button id="close-checkout" class="icon-btn modal-close" aria-label="Close">✕</button>
+      <div class="modal-body vertical">
+        <h3>Checkout</h3>
+        <div class="form-row">
+          <label>Name</label>
+          <input id="cust-name" type="text" placeholder="Your name" class="input" />
+        </div>
+        <div class="form-row">
+          <label>Email</label>
+          <input id="cust-email" type="email" placeholder="you@example.com" class="input" />
+        </div>
+        <button id="place-order" class="primary-btn">Place Order</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="site-footer">
     <div>© <span id="year"></span> Nimbus Shop. All rights reserved.</div>

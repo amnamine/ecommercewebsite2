@@ -4,6 +4,7 @@
   const els = {
     grid: document.getElementById('products-grid'),
     chips: document.getElementById('category-chips'),
+    sortSelect: document.getElementById('sort-select'),
     search: document.getElementById('search-input'),
     searchBtn: document.getElementById('search-btn'),
     cartBtn: document.getElementById('cart-btn'),
@@ -11,10 +12,34 @@
     cartDrawer: document.getElementById('cart-drawer'),
     cartItems: document.getElementById('cart-items'),
     cartSubtotal: document.getElementById('cart-subtotal'),
+    cartTax: document.getElementById('cart-tax'),
+    cartShip: document.getElementById('cart-ship'),
+    cartTotal: document.getElementById('cart-total'),
+    promoCode: document.getElementById('promo-code'),
+    applyPromo: document.getElementById('apply-promo'),
     closeCart: document.getElementById('close-cart'),
     checkoutBtn: document.getElementById('checkout-btn'),
     backdrop: document.getElementById('drawer-backdrop'),
     toast: document.getElementById('toast'),
+    modalBackdrop: document.getElementById('modal-backdrop'),
+    quickView: document.getElementById('quick-view'),
+    closeModal: document.getElementById('close-modal'),
+    modalImage: document.getElementById('modal-image'),
+    modalTitle: document.getElementById('modal-title'),
+    modalRating: document.getElementById('modal-rating'),
+    modalDesc: document.getElementById('modal-desc'),
+    modalPrice: document.getElementById('modal-price'),
+    modalStock: document.getElementById('modal-stock'),
+    modalDec: document.getElementById('modal-dec'),
+    modalInc: document.getElementById('modal-inc'),
+    modalCount: document.getElementById('modal-count'),
+    modalAdd: document.getElementById('modal-add'),
+    checkoutBackdrop: document.getElementById('checkout-backdrop'),
+    checkoutModal: document.getElementById('checkout-modal'),
+    closeCheckout: document.getElementById('close-checkout'),
+    custName: document.getElementById('cust-name'),
+    custEmail: document.getElementById('cust-email'),
+    placeOrder: document.getElementById('place-order'),
     year: document.getElementById('year')
   };
 
@@ -23,7 +48,10 @@
     categories: [],
     selectedCategory: null,
     q: '',
-    cart: loadCart()
+    sort: 'newest',
+    wishlist: loadWishlist(),
+    cart: loadCart(),
+    promoCode: null
   };
 
   function loadCart() {
@@ -33,6 +61,10 @@
     } catch (_) { return []; }
   }
   function saveCart() { localStorage.setItem('cart', JSON.stringify(state.cart)); }
+  function loadWishlist() {
+    try { const raw = localStorage.getItem('wishlist'); return raw ? JSON.parse(raw) : []; } catch (_) { return []; }
+  }
+  function saveWishlist() { localStorage.setItem('wishlist', JSON.stringify(state.wishlist)); }
 
   function formatCurrency(n) { return `$${n.toFixed(2)}`; }
 
@@ -47,10 +79,18 @@
     if (state.selectedCategory) params.set('category', state.selectedCategory);
     const res = await fetch(`${apiBase}/api/products?${params.toString()}`);
     state.products = await res.json();
+    // client-side sort
+    if (state.sort === 'price_asc') state.products.sort((a,b)=>a.price-b.price);
+    else if (state.sort === 'price_desc') state.products.sort((a,b)=>b.price-a.price);
+    else state.products.sort((a,b)=>b.id-a.id);
+    // wishlist filter
+    if (state.selectedCategory === 'Wishlist') {
+      state.products = state.products.filter(p => state.wishlist.includes(p.id));
+    }
   }
 
   function renderChips() {
-    const chips = ['All', ...state.categories];
+    const chips = ['All', 'Wishlist', ...state.categories];
     els.chips.innerHTML = chips.map(c => {
       const active = (!state.selectedCategory && c === 'All') || state.selectedCategory === c;
       return `<button class="chip ${active ? 'active' : ''}" data-cat="${c}">${c}</button>`;
@@ -76,9 +116,10 @@
   function cardHtml(p) {
     return `
       <article class="card" data-id="${p.id}">
-        <img src="${p.image_url}" alt="${escapeHtml(p.name)}" onerror="this.src='https://placehold.co/640x360'">
+        <img src="/proxy-image?url=${encodeURIComponent(p.image_url)}" alt="${escapeHtml(p.name)}" onerror="this.src='https://placehold.co/640x360'">
         <div class="body">
-          <div class="title">${escapeHtml(p.name)}</div>
+          <div class="title clickable">${escapeHtml(p.name)}</div>
+          <div class="rating">${starsHtml(p)}</div>
           <div class="desc">${escapeHtml(p.description || '')}</div>
           <div class="price-row">
             <div class="price">${formatCurrency(p.price)}</div>
@@ -88,7 +129,10 @@
               <button class="icon-btn inc" title="Increase">+</button>
             </div>
           </div>
-          <button class="primary-btn add">Add to Cart</button>
+          <div style="display:flex; gap:8px">
+            <button class="primary-btn add" style="flex:1">Add to Cart</button>
+            <button class="icon-btn wish" title="Wishlist">❤</button>
+          </div>
         </div>
       </article>
     `;
@@ -108,6 +152,19 @@
         const id = Number(card.dataset.id);
         const product = state.products.find(x => x.id === id);
         addToCart(product, count);
+      });
+      const id = Number(card.dataset.id);
+      const title = card.querySelector('.title');
+      const img = card.querySelector('img');
+      title.addEventListener('click', () => openQuickView(id));
+      img.addEventListener('click', () => openQuickView(id));
+      const wishBtn = card.querySelector('.wish');
+      if (state.wishlist.includes(id)) wishBtn.classList.add('active');
+      wishBtn.addEventListener('click', () => {
+        if (state.wishlist.includes(id)) state.wishlist = state.wishlist.filter(x=>x!==id);
+        else state.wishlist.push(id);
+        saveWishlist();
+        wishBtn.classList.toggle('active');
       });
     });
   }
@@ -169,28 +226,91 @@
 
   function updateSubtotal() {
     const subtotal = state.cart.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    const tax = subtotal * 0.10;
+    const shipping = subtotal >= 100 ? 0 : (subtotal === 0 ? 0 : 7);
+    const discount = state.promoCode === 'SAVE10' ? Math.min(subtotal * 0.10, 50) : 0;
+    const total = Math.max(0, subtotal + tax + shipping - discount);
     els.cartSubtotal.textContent = formatCurrency(subtotal);
+    if (els.cartTax) els.cartTax.textContent = formatCurrency(tax);
+    if (els.cartShip) els.cartShip.textContent = formatCurrency(shipping);
+    if (els.cartTotal) els.cartTotal.textContent = formatCurrency(total);
   }
 
   async function checkout() {
     if (!state.cart.length) return;
-    els.checkoutBtn.disabled = true;
+    openCheckoutModal();
+  }
+
+  function openCheckoutModal(){
+    els.checkoutModal.classList.add('show');
+    els.checkoutBackdrop.classList.add('show');
+    els.checkoutModal.setAttribute('aria-hidden','false');
+  }
+  function closeCheckoutModal(){
+    els.checkoutModal.classList.remove('show');
+    els.checkoutBackdrop.classList.remove('show');
+    els.checkoutModal.setAttribute('aria-hidden','true');
+  }
+
+  async function placeOrder(){
+    if (!state.cart.length) return;
+    els.placeOrder.disabled = true;
     try {
+      const customer = { name: els.custName.value.trim() || null, email: els.custEmail.value.trim() || null };
       const res = await fetch(`${apiBase}/api/orders`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: state.cart.map(it => ({ product_id: it.product_id, quantity: it.quantity })) })
+        body: JSON.stringify({ customer, items: state.cart.map(it => ({ product_id: it.product_id, quantity: it.quantity })) })
       });
       if (!res.ok) throw new Error('Checkout failed');
       const data = await res.json();
       state.cart = []; saveCart(); renderCart(); updateCartBadge();
       showToast(`Order #${data.id} placed! Total ${formatCurrency(data.total)}`);
-      closeDrawer();
+      closeCheckoutModal(); closeDrawer();
       refresh();
-    } catch (e) {
-      showToast('Failed to checkout. Please try again.');
-    } finally {
-      els.checkoutBtn.disabled = false;
-    }
+    } catch (e) { showToast('Failed to checkout. Please try again.'); }
+    finally { els.placeOrder.disabled = false; }
+  }
+
+  function openQuickView(id){
+    const p = state.products.find(x=>x.id===id); if(!p) return;
+    els.modalImage.src = p.image_url; els.modalImage.onerror = () => { els.modalImage.src = 'https://placehold.co/640x360'; };
+    els.modalTitle.textContent = p.name;
+    els.modalDesc.textContent = p.description || '';
+    els.modalPrice.textContent = formatCurrency(p.price);
+    els.modalStock.textContent = `In stock: ${p.stock}`;
+    els.modalRating.innerHTML = starsHtml(p);
+    let count = 1; els.modalCount.textContent = '1';
+    els.modalInc.onclick = () => { count = Math.min(99, count+1); els.modalCount.textContent = String(count); };
+    els.modalDec.onclick = () => { count = Math.max(1, count-1); els.modalCount.textContent = String(count); };
+    els.modalAdd.onclick = () => { addToCart(p, count); closeQuickView(); };
+    els.quickView.classList.add('show'); els.modalBackdrop.classList.add('show'); els.quickView.setAttribute('aria-hidden','false');
+  }
+  function closeQuickView(){
+    els.quickView.classList.remove('show'); els.modalBackdrop.classList.remove('show'); els.quickView.setAttribute('aria-hidden','true');
+  }
+
+  function starsHtml(p){
+    const rating = pseudoRating(p.name);
+    const full = Math.floor(rating); const half = rating - full >= 0.5 ? 1 : 0; const empty = 5 - full - half;
+    return `${'★'.repeat(full).split('').map(()=>'<span class="star">★</span>').join('')}${half?'<span class="star">★</span>':''}${'<span class="star muted">★</span>'.repeat(empty)}`;
+  }
+  function pseudoRating(str){
+    let h=0; for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i))>>>0; }
+    return 3 + (h % 20)/20 * 2; // 3.0 - 5.0
+  }
+
+  function showSkeleton(count=8){
+    els.grid.innerHTML = Array.from({length:count}).map(()=>`
+      <article class="card">
+        <div class="skeleton" style="width:100%;height:180px"></div>
+        <div class="body">
+          <div class="skeleton" style="width:60%;height:18px;border-radius:8px"></div>
+          <div class="skeleton" style="width:100%;height:14px;border-radius:8px"></div>
+          <div class="skeleton" style="width:70%;height:14px;border-radius:8px"></div>
+          <div class="skeleton" style="width:100%;height:36px;border-radius:12px"></div>
+        </div>
+      </article>
+    `).join('');
   }
 
   function openDrawer() {
@@ -211,6 +331,7 @@
   }
 
   async function refresh() {
+    showSkeleton(8);
     await fetchProducts();
     renderChips();
     renderProducts();
@@ -223,10 +344,17 @@
   // Events
   els.searchBtn.addEventListener('click', () => { state.q = els.search.value.trim(); refresh(); });
   els.search.addEventListener('keydown', e => { if (e.key === 'Enter') { state.q = els.search.value.trim(); refresh(); } });
+  els.sortSelect.addEventListener('change', () => { state.sort = els.sortSelect.value; refresh(); });
   els.cartBtn.addEventListener('click', () => { renderCart(); openDrawer(); });
   els.closeCart.addEventListener('click', closeDrawer);
   els.backdrop.addEventListener('click', closeDrawer);
   els.checkoutBtn.addEventListener('click', checkout);
+  els.applyPromo.addEventListener('click', () => { state.promoCode = (els.promoCode.value || '').trim().toUpperCase() || null; updateSubtotal(); });
+  els.closeModal.addEventListener('click', closeQuickView);
+  els.modalBackdrop.addEventListener('click', closeQuickView);
+  els.closeCheckout.addEventListener('click', closeCheckoutModal);
+  els.checkoutBackdrop.addEventListener('click', closeCheckoutModal);
+  els.placeOrder.addEventListener('click', placeOrder);
 
   // Init
   updateCartBadge();

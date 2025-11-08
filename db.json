@@ -1,0 +1,114 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Aurora Headphones",
+      "description": "Wireless over-ear headphones with noise cancelation.",
+      "price": 129.99,
+      "image_url": "https://images.unsplash.com/photo-1518441902119-7f8e8f1f7f6f?q=80&w=640&auto=format&fit=crop",
+      "stock": 20,
+      "category": "Audio"
+    },
+    {
+      "id": 2,
+      "name": "Nimbus Smartwatch",
+      "description": "Fitness tracking, heart-rate, and notifications in a sleek body.",
+      "price": 199,
+      "image_url": "https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?q=80&w=640&auto=format&fit=crop",
+      "stock": 15,
+      "category": "Wearables"
+    },
+    {
+      "id": 3,
+      "name": "Luma Desk Lamp",
+      "description": "Minimal LED lamp with adjustable brightness and color.",
+      "price": 59.5,
+      "image_url": "https://images.unsplash.com/photo-1507473885763-8b59eeb1d30f?q=80&w=640&auto=format&fit=crop",
+      "stock": 30,
+      "category": "Home"
+    },
+    {
+      "id": 4,
+      "name": "Vertex Backpack",
+      "description": "Water-resistant backpack with padded laptop compartment.",
+      "price": 89.99,
+      "image_url": "https://images.unsplash.com/photo-1520975680476-1b4568dc2094?q=80&w=640&auto=format&fit=crop",
+      "stock": 25,
+      "category": "Lifestyle"
+    },
+    {
+      "id": 5,
+      "name": "Flux Wireless Charger",
+      "description": "Fast 15W charging pad with soft-touch finish.",
+      "price": 29.99,
+      "image_url": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=640&auto=format&fit=crop",
+      "stock": 40,
+      "category": "Accessories"
+    },
+    {
+      "id": 6,
+      "name": "Cascade Water Bottle",
+      "description": "Insulated steel bottle keeps drinks cold for 24 hours.",
+      "price": 24.95,
+      "image_url": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=640&auto=format&fit=crop",
+      "stock": 50,
+      "category": "Lifestyle"
+    },
+    {
+      "id": 7,
+      "name": "Pulse Bluetooth Speaker",
+      "description": "Compact speaker with deep bass and 12-hour battery.",
+      "price": 49.99,
+      "image_url": "https://images.unsplash.com/photo-1585386959984-a4155223166f?q=80&w=640&auto=format&fit=crop",
+      "stock": 35,
+      "category": "Audio"
+    },
+    {
+      "id": 8,
+      "name": "Orbit Desk Organizer",
+      "description": "Keep your workspace tidy with modular compartments.",
+      "price": 39,
+      "image_url": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=640&auto=format&fit=crop",
+      "stock": 22,
+      "category": "Home"
+    },
+    {
+      "id": 9,
+      "name": "Zen Ergonomic Mouse",
+      "description": "Reduce wrist strain with a sculpted vertical design.",
+      "price": 59,
+      "image_url": "https://images.unsplash.com/photo-1587825140400-2343c11bf63e?q=80&w=640&auto=format&fit=crop",
+      "stock": 28,
+      "category": "Accessories"
+    },
+    {
+      "id": 10,
+      "name": "Sierra Sunglasses",
+      "description": "Polarized lenses with lightweight acetate frame.",
+      "price": 74.99,
+      "image_url": "https://images.unsplash.com/photo-1512149673954-1f0b76c6ab81?q=80&w=640&auto=format&fit=crop",
+      "stock": 18,
+      "category": "Lifestyle"
+    },
+    {
+      "id": 11,
+      "name": "Echo Keyboard",
+      "description": "Low-profile mechanical keyboard with RGB backlight.",
+      "price": 99,
+      "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=640&auto=format&fit=crop",
+      "stock": 17,
+      "category": "Accessories"
+    },
+    {
+      "id": 12,
+      "name": "Nova LED Strip",
+      "description": "Ambient lighting strip with app-controlled scenes.",
+      "price": 34.99,
+      "image_url": "https://images.unsplash.com/photo-1517404215738-1520603e5a2b?q=80&w=640&auto=format&fit=crop",
+      "stock": 45,
+      "category": "Home"
+    }
+  ],
+  "orders": [],
+  "order_items": []
+}
