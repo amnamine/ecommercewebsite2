@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nimbus Shop · Product</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><div class="logo">◎</div><div class="brand-text"><span class="brand-title">Nimbus</span><span class="brand-sub">Shop</span></div></div>
+    <nav class="nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/index.html" class="nav-link">Products</a>
+      <a href="/wishlist.html" class="nav-link">Wishlist</a>
+      <a href="/orders.html" class="nav-link">Orders</a>
+      <a href="/about.html" class="nav-link">About</a>
+      <a href="/contact.html" class="nav-link">Contact</a>
+    </nav>
+    <div class="header-actions"><button id="theme-toggle" class="icon-btn" title="Toggle theme">🌗</button><a href="/" class="cart-btn">← Back</a></div>
+  </header>
+
+  <main class="content">
+    <section id="prod" class="hero reveal">
+      <div id="prod-content"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="product.js"></script>
+</body>
+</html>

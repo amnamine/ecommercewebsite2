@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nimbus Shop · Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><div class="logo">◎</div><div class="brand-text"><span class="brand-title">Nimbus</span><span class="brand-sub">Shop</span></div></div>
+    <nav class="nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/index.html" class="nav-link">Products</a>
+      <a href="/wishlist.html" class="nav-link">Wishlist</a>
+      <a href="/orders.html" class="nav-link">Orders</a>
+      <a href="/about.html" class="nav-link">About</a>
+      <a href="/contact.html" class="nav-link">Contact</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <section class="hero">
+      <h1 class="section-title">Contact Us</h1>
+      <p class="muted">Questions or feedback? We’d love to hear from you.</p>
+    </section>
+    <section class="card"><div class="body">
+      <div class="form-row"><label>Your Name</label><input id="c-name" class="input" placeholder="Your name"></div>
+      <div class="form-row"><label>Your Email</label><input id="c-email" class="input" placeholder="you@example.com"></div>
+      <div class="form-row"><label>Subject</label><input id="c-subject" class="input" placeholder="How can we help?"/></div>
+      <div class="form-row"><label>Category</label><select id="c-category" class="select"><option>General</option><option>Order</option><option>Product</option><option>Partnership</option></select></div>
+      <div class="form-row"><label>Message</label><textarea id="c-message" class="input" style="min-height:140px" placeholder="Write your message"></textarea></div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <input id="c-news" type="checkbox"/> <label for="c-news" class="muted">Subscribe to updates</label>
+      </div>
+      <button id="c-send" class="primary-btn">Send</button>
+    </div></section>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const els = {
+      name: document.getElementById('c-name'),
+      email: document.getElementById('c-email'),
+      subject: document.getElementById('c-subject'),
+      category: document.getElementById('c-category'),
+      message: document.getElementById('c-message'),
+      news: document.getElementById('c-news'),
+      send: document.getElementById('c-send'),
+      toast: document.getElementById('toast'),
+    };
+    function showToast(msg){ els.toast.textContent = msg; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'), 2200); }
+    function validate(){
+      let ok = true; [els.name, els.email, els.subject, els.message].forEach(el=>{
+        if(!el.value.trim()){ el.style.borderColor = 'var(--danger)'; ok = false; } else { el.style.borderColor = 'var(--border)'; }
+      });
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(els.email.value.trim())) { els.email.style.borderColor = 'var(--danger)'; ok=false; }
+      return ok;
+    }
+    els.send.addEventListener('click', async () => {
+      if (!validate()) { showToast('Please fill required fields'); return; }
+      els.send.disabled = true;
+      try {
+        const payload = {
+          name: els.name.value.trim(),
+          email: els.email.value.trim(),
+          subject: els.subject.value.trim(),
+          category: els.category.value,
+          message: els.message.value.trim(),
+          subscribe: !!els.news.checked
+        };
+        const res = await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        if (!res.ok) throw new Error('Failed');
+        showToast('Thanks! Your message was sent.');
+        els.name.value = els.email.value = els.subject.value = els.message.value = '';
+        els.news.checked = false;
+      } catch (_) { showToast('Error sending message'); }
+      finally { els.send.disabled = false; }
+    });
+  </script>
+</body>
+</html>

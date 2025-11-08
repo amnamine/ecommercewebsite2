@@ -6,7 +6,7 @@
       "description": "Wireless over-ear headphones with noise cancelation.",
       "price": 129.99,
       "image_url": "https://images.unsplash.com/photo-1518441902119-7f8e8f1f7f6f?q=80&w=640&auto=format&fit=crop",
-      "stock": 20,
+      "stock": 19,
       "category": "Audio"
     },
     {
@@ -105,10 +105,42 @@
       "description": "Ambient lighting strip with app-controlled scenes.",
       "price": 34.99,
       "image_url": "https://images.unsplash.com/photo-1517404215738-1520603e5a2b?q=80&w=640&auto=format&fit=crop",
-      "stock": 45,
+      "stock": 44,
       "category": "Home"
     }
   ],
-  "orders": [],
-  "order_items": []
+  "orders": [
+    {
+      "id": 1,
+      "customer_name": "Djafer Benchaib",
+      "customer_email": "dzdjafer1@gmail.com",
+      "total": 34.99,
+      "status": "created",
+      "created_at": "2025-11-08T21:02:11.786Z"
+    },
+    {
+      "id": 2,
+      "customer_name": null,
+      "customer_email": null,
+      "total": 129.99,
+      "status": "created",
+      "created_at": "2025-11-08T21:18:28.119Z"
+    }
+  ],
+  "order_items": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "product_id": 12,
+      "quantity": 1,
+      "price": null
+    },
+    {
+      "id": 2,
+      "order_id": 2,
+      "product_id": 1,
+      "quantity": 1,
+      "price": null
+    }
+  ]
 }

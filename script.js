@@ -8,6 +8,7 @@
     search: document.getElementById('search-input'),
     searchBtn: document.getElementById('search-btn'),
     cartBtn: document.getElementById('cart-btn'),
+    themeToggle: document.getElementById('theme-toggle'),
     cartCount: document.getElementById('cart-count'),
     cartDrawer: document.getElementById('cart-drawer'),
     cartItems: document.getElementById('cart-items'),
@@ -51,7 +52,8 @@
     sort: 'newest',
     wishlist: loadWishlist(),
     cart: loadCart(),
-    promoCode: null
+    promoCode: null,
+    theme: loadTheme()
   };
 
   function loadCart() {
@@ -67,6 +69,8 @@
   function saveWishlist() { localStorage.setItem('wishlist', JSON.stringify(state.wishlist)); }
 
   function formatCurrency(n) { return `$${n.toFixed(2)}`; }
+  function loadTheme(){ try{ return localStorage.getItem('theme') || 'dark'; }catch(_){ return 'dark'; } }
+  function saveTheme(){ localStorage.setItem('theme', state.theme); }
 
   async function fetchCategories() {
     const res = await fetch(`${apiBase}/api/categories`);
@@ -111,6 +115,7 @@
     }
     els.grid.innerHTML = state.products.map(p => cardHtml(p)).join('');
     attachCardEvents();
+    initReveal();
   }
 
   function cardHtml(p) {
@@ -179,6 +184,7 @@
   }
 
   function updateCartBadge() {
+    if (!els.cartCount) return;
     const count = state.cart.reduce((a, b) => a + b.quantity, 0);
     els.cartCount.textContent = String(count);
   }
@@ -313,6 +319,24 @@
     `).join('');
   }
 
+  // Reveal animation using IntersectionObserver with stagger
+  let revealObserver;
+  function initReveal(){
+    if (!revealObserver) {
+      revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add('show');
+        });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    }
+    const cards = [...els.grid.querySelectorAll('.card')];
+    cards.forEach((card, i) => {
+      card.classList.add('reveal','stagger');
+      card.style.setProperty('--stagger', `${i*60}ms`);
+      revealObserver.observe(card);
+    });
+  }
+
   function openDrawer() {
     els.cartDrawer.classList.add('open');
     els.backdrop.classList.add('show');
@@ -330,7 +354,22 @@
     setTimeout(() => els.toast.classList.remove('show'), 2200);
   }
 
+  // Button ripple effect
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.primary-btn');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.left = `${x}px`; ripple.style.top = `${y}px`;
+    const max = Math.max(rect.width, rect.height); ripple.style.width = ripple.style.height = `${max}px`;
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 700);
+  });
+
   async function refresh() {
+    if (!els.grid) return;
     showSkeleton(8);
     await fetchProducts();
     renderChips();
@@ -342,25 +381,42 @@
   }
 
   // Events
-  els.searchBtn.addEventListener('click', () => { state.q = els.search.value.trim(); refresh(); });
-  els.search.addEventListener('keydown', e => { if (e.key === 'Enter') { state.q = els.search.value.trim(); refresh(); } });
-  els.sortSelect.addEventListener('change', () => { state.sort = els.sortSelect.value; refresh(); });
-  els.cartBtn.addEventListener('click', () => { renderCart(); openDrawer(); });
-  els.closeCart.addEventListener('click', closeDrawer);
-  els.backdrop.addEventListener('click', closeDrawer);
-  els.checkoutBtn.addEventListener('click', checkout);
-  els.applyPromo.addEventListener('click', () => { state.promoCode = (els.promoCode.value || '').trim().toUpperCase() || null; updateSubtotal(); });
-  els.closeModal.addEventListener('click', closeQuickView);
-  els.modalBackdrop.addEventListener('click', closeQuickView);
-  els.closeCheckout.addEventListener('click', closeCheckoutModal);
-  els.checkoutBackdrop.addEventListener('click', closeCheckoutModal);
-  els.placeOrder.addEventListener('click', placeOrder);
+  els.searchBtn && els.searchBtn.addEventListener('click', () => { state.q = els.search?.value.trim() || ''; refresh(); });
+  els.search && els.search.addEventListener('keydown', e => { if (e.key === 'Enter') { state.q = els.search.value.trim(); refresh(); } });
+  els.sortSelect && els.sortSelect.addEventListener('change', () => { state.sort = els.sortSelect.value; refresh(); });
+  els.cartBtn && els.cartBtn.addEventListener('click', () => { renderCart(); openDrawer(); });
+  els.closeCart && els.closeCart.addEventListener('click', closeDrawer);
+  els.backdrop && els.backdrop.addEventListener('click', closeDrawer);
+  els.checkoutBtn && els.checkoutBtn.addEventListener('click', checkout);
+  els.applyPromo && els.applyPromo.addEventListener('click', () => { state.promoCode = (els.promoCode?.value || '').trim().toUpperCase() || null; updateSubtotal(); });
+  els.closeModal && els.closeModal.addEventListener('click', closeQuickView);
+  els.modalBackdrop && els.modalBackdrop.addEventListener('click', closeQuickView);
+  els.closeCheckout && els.closeCheckout.addEventListener('click', closeCheckoutModal);
+  els.checkoutBackdrop && els.checkoutBackdrop.addEventListener('click', closeCheckoutModal);
+  els.placeOrder && els.placeOrder.addEventListener('click', placeOrder);
 
   // Init
   updateCartBadge();
-  els.year.textContent = new Date().getFullYear();
+  if (els.year) els.year.textContent = new Date().getFullYear();
+  function applyTheme(){ document.body.classList.toggle('theme-light', state.theme === 'light'); }
+  applyTheme();
+  // Mark active nav link
+  const navLinks = document.querySelectorAll('.nav-link');
+  if (navLinks && navLinks.length) {
+    const path = location.pathname.replace(/\/$/, '/index.html');
+    navLinks.forEach(a => {
+      const href = new URL(a.href, location.origin).pathname;
+      if (href === path) a.classList.add('active');
+      // Also treat root path as home
+      if ((path === '/index.html' || path === '/') && (href === '/' || href.endsWith('/index.html'))) a.classList.add('active');
+    });
+  }
+  // Read URL view flag (wishlist)
+  const initView = new URLSearchParams(location.search).get('view');
+  if (initView === 'wishlist') state.selectedCategory = 'Wishlist';
   (async () => {
-    try { await fetchCategories(); } catch (_) {}
+    try { if (els.chips) await fetchCategories(); } catch (_) {}
     await refresh();
   })();
 })();
+// (moved inside IIFE)

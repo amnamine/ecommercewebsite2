@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-let db = { products: [], orders: [], order_items: [] };
+let db = { products: [], orders: [], order_items: [], messages: [] };
 
 function saveDb() {
   fs.writeFileSync(DB_JSON, JSON.stringify(db, null, 2));
@@ -132,6 +132,30 @@ app.post('/api/orders', (req, res) => {
   }
   saveDb();
   res.json({ id: orderId, total, status: 'created', created_at: createdAt });
+});
+
+// Receive contact messages (demo inbox)
+app.post('/api/contact', (req, res) => {
+  const { name, email, subject, category, message, subscribe } = req.body || {};
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+  const id = (db.messages.length ? Math.max(...db.messages.map(m=>m.id)) : 0) + 1;
+  const created_at = new Date().toISOString();
+  db.messages.push({ id, name, email, subject, category, message, subscribe: !!subscribe, created_at });
+  saveDb();
+  res.json({ ok: true, id });
+});
+// Fetch orders made so far (no auth, demo only)
+app.get('/api/orders', (req, res) => {
+  const orders = db.orders.map(o => ({
+    ...o,
+    items: db.order_items.filter(it => it.order_id === o.id).map(it => {
+      const p = db.products.find(pp => pp.id === it.product_id) || { name: 'Unknown', price: 0 };
+      return { product_id: it.product_id, name: p.name, quantity: it.quantity, price: p.price };
+    })
+  })).sort((a,b)=>b.id-a.id);
+  res.json(orders);
 });
 
 app.get('/', (req, res) => {
